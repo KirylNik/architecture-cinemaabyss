@@ -1,0 +1,124 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+skinparam nodesep 45
+skinparam ranksep 65
+
+title Кинобездна: диаграмма контейнеров (To-Be)
+
+Person(viewer, "Зритель", "Смотрит фильмы по подписке")
+Person(staff, "Контент-менеджер / поддержка", "Сотрудник Кинобездны")
+
+System_Boundary(cinemaabyss, "Кинобездна") {
+  Boundary(clients, "Клиенты зрителя") {
+    Container(mobile, "Мобильное приложение", "iOS, Android")
+    Container(web, "Веб-приложение", "SPA")
+    Container(tv, "Приложение Smart TV", "Smart TV")
+  }
+  Container(admin, "Приложение администратора", "SPA")
+
+  Container(gateway, "API Gateway", "Proxy", "Единая точка входа: маршрутизация, проверка JWT")
+  Container(keycloak, "Keycloak", "Keycloak", "Регистрация, вход, выдача JWT")
+
+  Boundary(bffs, "BFF, по одному на клиента") {
+    Container(bffMobile, "BFF мобильного", "Go")
+    Container(bffWeb, "BFF веба", "Go")
+    Container(bffTv, "BFF Smart TV", "Go")
+    Container(bffAdmin, "BFF админки", "Go")
+  }
+
+
+
+
+
+
+  Boundary(recs, "Рекомендации") {
+    Container(recommendations, "Рекомендации", "Go", "Сигналы и готовые подборки")
+    ContainerDb(recommendationsDb, "БД подборок", "PostgreSQL")
+  }
+  Boundary(users, "Пользователи") {
+    Container(usersService, "Пользователи", "Go", "Профиль, избранное")
+    ContainerDb(usersDb, "БД пользователей", "PostgreSQL")
+  }
+  Boundary(billing, "Подписки и оплата") {
+    Container(subscriptions, "Подписки и оплата", "Go", "Подписки, скидки, платежи")
+    ContainerDb(subscriptionsDb, "БД подписок", "PostgreSQL")
+  }
+  Boundary(viewing, "Просмотр") {
+    Container(playback, "Просмотр", "Go", "Запуск фильма, прогресс, история")
+    ContainerDb(playbackDb, "БД просмотров", "PostgreSQL")
+  }
+  Boundary(content, "Контент") {
+    Container(catalog, "Каталог (movies)", "Go", "Произведения, метаданные, оценки")
+    Container(ingestion, "Поступление контента", "Go, ACL", "Переводит контент партнёров в нашу модель")
+    ContainerDb(catalogDb, "БД каталога", "PostgreSQL")
+    ContainerDb(videoStorage, "Хранилище видео", "S3", "Плееры качают видео по подписанной ссылке")
+  }
+
+  ContainerQueue(kafka, "Kafka", "Apache Kafka", "События между сервисами; «аккаунт удалён» получают все сервисы с данными пользователя")
+}
+
+System_Ext(payments, "Платёжная система")
+System_Ext(cinemas, "Онлайн-кинотеатры", "Партнёры")
+System_Ext(recSystem, "Рекомендательная система")
+
+Lay_R(viewer, staff)
+Lay_R(mobile, web)
+Lay_R(web, tv)
+Lay_R(tv, admin)
+Lay_R(gateway, keycloak)
+Lay_R(bffMobile, bffWeb)
+Lay_R(bffWeb, bffTv)
+Lay_R(bffTv, bffAdmin)
+Lay_R(recommendations, usersService)
+Lay_R(usersService, subscriptions)
+Lay_R(subscriptions, playback)
+Lay_R(playback, catalog)
+Lay_R(catalog, ingestion)
+Lay_R(recommendationsDb, usersDb)
+Lay_R(usersDb, subscriptionsDb)
+Lay_R(subscriptionsDb, playbackDb)
+Lay_R(playbackDb, catalogDb)
+Lay_R(catalogDb, videoStorage)
+Lay_L(recommendations, recSystem)
+Lay_R(ingestion, cinemas)
+Lay_R(kafka, payments)
+Lay_D(playbackDb, kafka)
+
+Rel_D(viewer, clients, "Смотрит фильмы")
+Rel_D(staff, admin, "Ведёт каталог")
+Rel_D(clients, gateway, "Вызывают API", "HTTPS")
+Rel_D(admin, gateway, "Вызывает API", "HTTPS")
+Rel_R(gateway, keycloak, "Вход, ключи для JWT", "OIDC")
+Rel_D(gateway, bffs, "Маршрутизирует по клиенту")
+
+Rel_D(bffs, recs, "Подборки", "REST")
+Rel_D(bffs, users, "Профиль", "REST")
+Rel_D(bffs, billing, "Подписка", "REST")
+Rel_D(bffs, viewing, "Просмотр", "REST")
+Rel_D(bffs, content, "Каталог, оценки", "REST")
+
+Rel_L(playback, subscriptions, "Проверяет подписку", "REST")
+Rel_R(playback, catalog, "Ссылка на видео", "REST")
+Rel_L(ingestion, catalog, "Ссылка для загрузки", "REST")
+
+Rel_D(subscriptions, subscriptionsDb, "")
+Rel_D(playback, playbackDb, "")
+Rel_D(catalog, catalogDb, "")
+Rel_D(catalog, videoStorage, "")
+Rel_D(ingestion, videoStorage, "Загружает видео")
+Rel_D(usersService, usersDb, "")
+Rel_D(recommendations, recommendationsDb, "")
+
+Rel_D(viewing, kafka, "«просмотр завершён»")
+Rel_D(content, kafka, "«произведение поступило», «оценка поставлена»")
+Rel_U(kafka, content, "«произведение поступило»")
+Rel_D(users, kafka, "«аккаунт удалён»")
+Rel_U(kafka, recs, "оценки, просмотры")
+
+Rel_D(subscriptions, payments, "Платёж / webhook", "REST")
+Rel_R(ingestion, cinemas, "Забирает контент", "API партнёров")
+Rel_L(recommendations, recSystem, "Сигналы / подборки", "асинхронно")
+
+SHOW_LEGEND()
+@enduml
