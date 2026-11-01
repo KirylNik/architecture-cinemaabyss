@@ -130,13 +130,13 @@ kafka:
     accessMode: ReadWriteOnce
   topics:
     - name: movie-events
-      partitions: 1
+      partitions: 4
       replicationFactor: 1
     - name: user-events
-      partitions: 1
+      partitions: 3
       replicationFactor: 1
     - name: payment-events
-      partitions: 1
+      partitions: 2
       replicationFactor: 1
 
 # Zookeeper configuration
