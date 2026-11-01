@@ -1,0 +1,24 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Кинобездна: диаграмма контекста
+
+Person(viewer, "Зритель", "Смотрит фильмы по единой подписке с телефона, ноутбука или Smart TV")
+Person(staff, "Контент-менеджер / поддержка", "Сотрудник Кинобездны (допущение): ведёт каталог, помогает пользователям")
+
+System(cinemaabyss, "Онлайн-кинотеатр «Кинобездна»", "Агрегатор фильмов: каталог, просмотр, оценки, избранное, подписки и оплата")
+
+System_Ext(cinemas, "Онлайн-кинотеатры", "Сторонние сервисы и открытые источники контента")
+System_Ext(payments, "Платёжная система", "Проводит оплату подписок")
+System_Ext(recommendations, "Рекомендательная система", "Сторонний сервис, формирует персональные подборки")
+
+Rel(viewer, cinemaabyss, "Выбирает, смотрит и оценивает фильмы, оплачивает подписку", "HTTPS, REST API")
+Rel(staff, cinemaabyss, "Ведёт каталог, помогает пользователям", "Веб-интерфейс")
+Rel(cinemaabyss, cinemas, "Получает каталог и видео", "API онлайн-кинотеатров")
+Rel(cinemaabyss, payments, "Создаёт платёж за подписку", "API, синхронно")
+Rel(payments, cinemaabyss, "Сообщает результат оплаты", "Webhook")
+Rel(cinemaabyss, recommendations, "Передаёт просмотры и оценки", "Асинхронно, брокер сообщений")
+Rel(recommendations, cinemaabyss, "Возвращает персональные подборки", "Асинхронно, брокер сообщений")
+
+SHOW_LEGEND()
+@enduml

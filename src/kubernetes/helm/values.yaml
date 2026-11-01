@@ -5,7 +5,7 @@ global:
 
 # Image pull secrets
 imagePullSecrets:
-  dockerconfigjson: ewoJImF1dGhzIjogewoJCSJnaGNyLmlvIjogewoJCQkiYXV0aCI6
+  dockerconfigjson: eyJhdXRocyI6IHsiZ2hjci5pbyI6IHsiYXV0aCI6ICJTMmx5ZVd4T2FXczZaMmh3WDFOeGNtdFVTbEZhYkZZNWNtNUtXVnA0T1hCcVJIZFpOakp4ZDBKWE1URm1hVTlwWmc9PSJ9fX0=
 # Database configuration
 database:
   host: postgres
@@ -33,7 +33,7 @@ database:
 monolith:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/monolith
+    repository: ghcr.io/kirylnik/architecture-cinemaabyss/monolith
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -53,7 +53,7 @@ monolith:
 proxyService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/proxy-service
+    repository: ghcr.io/kirylnik/architecture-cinemaabyss/proxy-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -73,7 +73,7 @@ proxyService:
 moviesService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/movies-service
+    repository: ghcr.io/kirylnik/architecture-cinemaabyss/movies-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -93,7 +93,7 @@ moviesService:
 eventsService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/events-service
+    repository: ghcr.io/kirylnik/architecture-cinemaabyss/events-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -114,7 +114,7 @@ kafka:
   enabled: true
   image:
     repository: wurstmeister/kafka
-    tag: 2.13-2.7.0
+    tag: 2.13-2.8.1
     pullPolicy: IfNotPresent
   replicas: 1
   resources:
@@ -130,21 +130,21 @@ kafka:
     accessMode: ReadWriteOnce
   topics:
     - name: movie-events
-      partitions: 1
+      partitions: 4
       replicationFactor: 1
     - name: user-events
-      partitions: 1
+      partitions: 3
       replicationFactor: 1
     - name: payment-events
-      partitions: 1
+      partitions: 2
       replicationFactor: 1
 
 # Zookeeper configuration
 zookeeper:
   enabled: true
   image:
-    repository: wurstmeister/zookeeper
-    tag: latest
+    repository: zookeeper
+    tag: "3.8"
     pullPolicy: IfNotPresent
   replicas: 1
   resources:

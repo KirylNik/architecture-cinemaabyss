@@ -72,13 +72,13 @@ spec:
         resources:
           {{- toYaml .Values.zookeeper.resources | nindent 10 }}
         env:
-        - name: ZOOKEEPER_CLIENT_PORT
-          value: "2181"
-        - name: ZOOKEEPER_TICK_TIME
+        - name: ZOO_TICK_TIME
           value: "2000"
+        - name: ZK_SERVER_HEAP
+          value: "256"
         volumeMounts:
         - name: zookeeper-data
-          mountPath: /var/lib/zookeeper/data
+          mountPath: /data
         readinessProbe:
           tcpSocket:
             port: 2181
@@ -175,11 +175,13 @@ spec:
         - name: KAFKA_CREATE_TOPICS
           value: "{{ range $i, $topic := .Values.kafka.topics }}{{ if $i }},{{ end }}{{ $topic.name }}:{{ $topic.partitions }}:{{ $topic.replicationFactor }}{{ end }}"
         - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
-          value: "true"
+          value: "false"
         - name: KAFKA_BROKER_ID
           value: "1"
         - name: KAFKA_LOG_DIRS
           value: "/kafka/kafka-logs"
+        - name: KAFKA_HEAP_OPTS
+          value: "-Xms256m -Xmx512m"
         volumeMounts:
         - name: kafka-data
           mountPath: /kafka
