@@ -360,6 +360,10 @@ minikube tunnel
 https://cinemaabyss.example.com/api/movies
 и приложите скриншот развертывания helm и вывода https://cinemaabyss.example.com/api/movies
 
+![Развертывание через helm](screenshots/task4-helm-install.png)
+
+![Вывод /api/movies после установки через helm](screenshots/task4-movies.png)
+
 ## Удаляем все
 
 ```bash
